@@ -2,7 +2,9 @@ import numpy as np
 from tabulate import tabulate
 
 class Tableau:
-    def __init__(self, zRow = None, zCol = None, A = None, typeSolve = 'primal', c = None, initBasis = None):
+    def __init__(self, zRow = None, zCol = None, A = None,
+                typeSolve = 'primal', c = None, initBasis = None,
+                b = None):
         self.zRow = zRow
         self.zCol = zCol
         self.A = A
@@ -13,13 +15,15 @@ class Tableau:
         self.pivotCol = None
         self.pivotRow = None
         self.cost = c
+        self.b = b
         self.cc = 0
         self.calculateCost()
 
-
-
     def solve(self, printSteps = True, printFinal = True, step = 1):
-        if step != 1:
+        if step == 1:
+            self.printProblem()
+            print()
+        else:
             print()
         print(f'Step {step}:')
         self.printTableau()
@@ -81,6 +85,29 @@ class Tableau:
             header += [f'x{i + 1}']
         print(tabulate(arr, headers = header))
 
+    def printProblem(self):
+        strCostFunc = ''
+        for i in range(self.n):
+            if i == self.n - 1:
+                strCostFunc += f'{self.cost[i]:4.1f}x{i+1}'
+            else:
+                strCostFunc += f'{self.cost[i]:4.1f}x{i+1} + '
+        print(f'min {strCostFunc}')
+        constraints = []
+        m = 0
+        for row in self.A:
+            str = ''
+            for i in range(self.n):
+                if i == self.n - 1:
+                    str += f'{row[i]:4.1f}x{i+1} <= {self.b[m]}'
+                    m += 1
+                else:
+                    str += f'{row[i]:4.1f}x{i+1} + '
+            constraints += [str]
+        print(f's.t. {constraints[0]}')
+        for i in range(self.m - 1):
+            print(f'     {constraints[i+1]}')
+
 if __name__ == '__main__':
     zRow = [-10, -12, -12, 0, 0, 0]
     zCol = [20, 20, 20]
@@ -89,5 +116,6 @@ if __name__ == '__main__':
           [2, 2, 1, 0, 0, 1]]
     c = [-10, -12, -12, 0, 0, 0]
     initBasis = [4, 5, 6]
-    t = Tableau(zRow = zRow, zCol = zCol, A = A, c = c, initBasis = initBasis)
+    b = [20, 20, 20]
+    t = Tableau(zRow = zRow, zCol = zCol, A = A, c = c, initBasis = initBasis, b = b)
     t.solve()
